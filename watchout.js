@@ -1,7 +1,7 @@
 // start slingin' some d3 here.
 
-var width = 500,
-    height = 800;
+var width = 800,
+    height = 500;
 
 var gameArea = d3.select("body").append("svg")
     .attr("class", "gameArea")
@@ -14,19 +14,26 @@ var axes = {
   y: d3.scale.linear().domain([0,100]).range([0,height])
 };
 
-var enemy = d3.select(".gameArea")
-    .append("svg:circle")
-    .attr("cx", 300)
-    .attr("cy", 300)
-    .attr("r", 10)
-    .attr("fill", "black");
+var drag = d3.behavior.drag()
+  .origin(function(d){return d;})
+  .on("drag", dragmove);
+
+var dragmove = function(d) {
+  d3.select(".player")
+    .attr("cx", Math.max(10, Math.min(800-10, d3.event.x)))
+    .attr("cy", Math.max(10, Math.min(500-10, d3.event.y)));
+};
+
+
 
 var player = d3.select(".gameArea")
     .append("svg:circle")
     .attr("cx", 200)
     .attr("cy", 200)
     .attr("r", 10)
-    .attr("fill", "green");
+    .attr("fill", "green")
+    .attr("class", "player")
+    .call(drag);
 
 var makeEnemies = function(count){
   var enemies = [];
@@ -55,8 +62,37 @@ var renderEnemies = function(enemyData) {
     .attr("fill", "black");
 };
 
-renderEnemies(makeEnemies(30));
+function update(data){
+  var move = gameArea.selectAll("circle.enemy")
+    .data(data, function(d){
+      return d.id;
+    });
+
+  move.transition()
+      .duration(1000)
+      .attr("cx", function(enemy){return axes.x(Math.random() * 100);})
+      .attr("cy", function(enemy){return axes.y(Math.random() * 100);});
+}
+
+//d3.select(".player").call(drag);
+
+var e = makeEnemies(30);
+renderEnemies(e);
+setInterval(function() {
+  update(e);
+}, 1000);
+
 // var enemies = gameArea.selectAll("circle")
 //     .data(makeEnemies(30));
+
+
+
+
+
+
+
+
+
+
 
 
