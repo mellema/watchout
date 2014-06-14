@@ -14,26 +14,43 @@ var axes = {
   y: d3.scale.linear().domain([0,100]).range([0,height])
 };
 
+var dragmove = function(d) {
+  d.x = d3.event.x, d.y = d3.event.y;
+  d3.select(this)
+    .attr("cx", d.x)//Math.max(10, Math.min(800-10, d3.event.x)))
+    .attr("cy", d.y);//Math.max(10, Math.min(500-10, d3.event.y)));
+};
+
 var drag = d3.behavior.drag()
   .origin(function(d){return d;})
   .on("drag", dragmove);
 
-var dragmove = function(d) {
-  d3.select(".player")
-    .attr("cx", Math.max(10, Math.min(800-10, d3.event.x)))
-    .attr("cy", Math.max(10, Math.min(500-10, d3.event.y)));
+
+var makePlayer = function(){
+  var player =
+  [{
+    id: "p",
+    x: Math.random() * 100,
+    y: Math.random() * 100
+  }];
+  return player;
 };
 
+var renderPlayer = function(player) {
+  var playerNode = gameArea.selectAll("circle.player")
+    .data(player, function(d){
+      return d.id;
+    });
 
-
-var player = d3.select(".gameArea")
+  playerNode.enter()
     .append("svg:circle")
-    .attr("cx", 200)
-    .attr("cy", 200)
+    .attr("class", "player")
+    .attr("cx", function(enemy){return axes.x(enemy.x);})
+    .attr("cy", function(enemy){return axes.y(enemy.y);})
     .attr("r", 10)
     .attr("fill", "green")
-    .attr("class", "player")
     .call(drag);
+};
 
 var makeEnemies = function(count){
   var enemies = [];
@@ -46,7 +63,6 @@ var makeEnemies = function(count){
   }
   return enemies;
 };
-
 var renderEnemies = function(enemyData) {
   var enemies = gameArea.selectAll("circle.enemy")
     .data(enemyData, function(d){
@@ -75,6 +91,8 @@ function update(data){
 }
 
 //d3.select(".player").call(drag);
+var p = makePlayer();
+renderPlayer(p);
 
 var e = makeEnemies(30);
 renderEnemies(e);
